@@ -159,7 +159,6 @@ async def hydrate_deep_captaincy_stats(manager_id: int, current_season_gw_data: 
             picks_data = await app.state.fpl_client.get_picks(manager_id, gw)
             picks = picks_data.get("picks", [])
             captain = next((pick for pick in picks if pick.get("is_captain")), None)
-            vice = next((pick for pick in picks if pick.get("is_vice_captain")), None)
 
             if captain:
                 cap_id = captain.get("element")
@@ -167,8 +166,9 @@ async def hydrate_deep_captaincy_stats(manager_id: int, current_season_gw_data: 
                 base_cap_points = live_scores.get(cap_id, 0)
                 running_captain_points += base_cap_points * multiplier
 
-                if running_captain_points >= 5:
+                if running_captain_points <= 7:
                    curse_incidents += 1
+        
         except Exception:
             continue
 
