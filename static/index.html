@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPL Wrapped</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .story-container { touch-action: manipulation; }
+    </style>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex items-center justify-center font-sans overflow-hidden p-0 md:p-4">
+
+    <div id="setup-card" class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl text-center space-y-6 mx-4">
+        <h1 class="text-4xl font-black tracking-tight bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">FPL WRAPPED</h1>
+        <p class="text-slate-400 text-sm">Enter your FPL Manager ID to unlock your season story slides.</p>
+        <div class="space-y-4">
+            <input type="number" id="managerIdInput" placeholder="e.g., 123456" 
+                class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-green-500 text-center text-lg font-mono">
+            <button onclick="generateWrapped()" class="w-full bg-green-500 hover:bg-green-600 text-slate-950 font-bold py-3 px-4 rounded-xl cursor-pointer transition">
+                Unbox My Season 🎁
+            </button>
+        </div>
+        <p id="error-msg" class="text-red-400 text-xs hidden"></p>
+    </div>
+
+    <div id="loading-card" class="hidden text-center space-y-4">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto"></div>
+        <p class="text-lg font-medium text-emerald-400 animate-pulse" id="loading-text">Analyzing performance matrices...</p>
+    </div>
+
+    <div id="story-wrapper" class="hidden relative w-full h-screen md:h-[750px] md:w-[420px] md:rounded-3xl shadow-2xl overflow-hidden story-container border border-white/10">
+        <div id="progress-container" class="absolute top-4 left-0 right-0 z-50 flex px-4 gap-1.5"></div>
+
+        <div class="slide hidden absolute inset-0 bg-gradient-to-br from-teal-900 via-indigo-950 to-slate-950 flex flex-col justify-between p-8 text-center">
+            <div class="mt-24 space-y-4">
+                <span class="text-xs font-bold tracking-widest text-emerald-400 uppercase">Season Review</span>
+                <h2 class="text-4xl font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent leading-tight">Welcome to Your FPL Wrapped</h2>
+                <p class="text-slate-300 text-sm px-4 leading-relaxed mt-2">The deadlines are finished, the final chips are deployed, and the bonus points are locked. Let's see how your season went!</p>
+            </div>
+            <div class="mb-16">
+                <button onclick="nextSlide()" class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold py-3.5 px-6 rounded-xl cursor-pointer transition shadow-lg shadow-emerald-500/20 text-sm group mx-auto">
+                    Let's see what is in store 
+                    <span class="transform transition-transform group-hover:translate-x-1">➔</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="slide hidden absolute inset-0 bg-gradient-to-br from-purple-900 via-indigo-950 to-slate-950 flex flex-col justify-between p-8 text-center">
+            <div class="mt-16 space-y-2">
+                <span class="text-xs font-bold tracking-widest text-purple-400 uppercase">Chapter 1</span>
+                <h2 class="text-3xl font-black tracking-tight">The Grand Finale</h2>
+                <p class="text-slate-400 text-[11px] px-4 leading-normal mt-1">Congratulations on battling through all 38 intense gameweeks. Here is where your final squad landed globally.</p>
+            </div>
+            <div class="space-y-4">
+                <p class="text-slate-400 text-sm">You finished with an overall global rank of:</p>
+                <div id="slide1-rank" class="text-5xl font-black text-green-400 font-mono">0</div>
+            </div>
+            <div class="mb-12 text-xs text-slate-500 animate-bounce">Tap right to continue ➔</div>
+        </div>
+
+        <div class="slide hidden absolute inset-0 bg-gradient-to-br from-cyan-950 via-slate-950 to-neutral-950 flex flex-col justify-between p-8 text-center">
+            <div class="mt-16 space-y-2">
+                <span class="text-xs font-bold tracking-widest text-cyan-400 uppercase">Chapter 2</span>
+                <h2 class="text-3xl font-black tracking-tight">Market Trading Volume</h2>
+                <p class="text-slate-400 text-[11px] px-4 leading-normal mt-1">Every free transfer, template pick, and deadline panic-buy led to this final transaction count.</p>
+            </div>
+            <div class="my-auto space-y-4">
+                <p class="text-slate-300 text-sm">Across the full season campaign, you executed:</p>
+                <div id="slide3-transfers" class="text-7xl font-black text-cyan-400 font-mono">0</div>
+                <div class="text-xs text-cyan-500 uppercase tracking-wider font-bold">Total Transfers</div>
+            </div>
+            <div class="mb-12"></div>
+        </div>
+
+        <div class="slide hidden absolute inset-0 bg-gradient-to-br from-red-950 via-slate-950 to-slate-900 flex flex-col justify-between p-8 text-center">
+            <div class="mt-16 space-y-2">
+                <span class="text-xs font-bold tracking-widest text-red-400 uppercase">Chapter 3</span>
+                <h2 class="text-3xl font-black tracking-tight">Self-Sabotage Index</h2>
+                <p class="text-slate-400 text-[11px] px-4 leading-normal mt-1">Taking point hits can fund magnificent hauls, or quickly evaporate your hard-earned green arrows.</p>
+            </div>
+            <div class="my-auto space-y-4">
+                <p class="text-slate-300 text-sm">You willingly sacrificed point hits to finance tactical changes:</p>
+                <div id="slide4-hits" class="text-6xl font-black text-red-500 font-mono">0 pts</div>
+                <div class="text-xs text-red-400 uppercase tracking-wider font-bold">Burned in Transfer Costs</div>
+            </div>
+            <div class="mb-12"></div>
+        </div>
+
+        <div class="slide hidden absolute inset-0 bg-gradient-to-br from-indigo-950 via-slate-950 to-slate-900 flex flex-col justify-between p-8 text-center">
+            <div class="mt-16 space-y-2">
+                <span class="text-xs font-bold tracking-widest text-amber-400 uppercase">Chapter 4</span>
+                <h2 class="text-3xl font-black tracking-tight">Your Tactical Persona</h2>
+                <p class="text-slate-400 text-[11px] px-4 leading-normal mt-1">This quadrant reflects your transfer activity and hit aggression to show how you approached risk all season.</p>
+            </div>
+            <div class="my-auto space-y-4 px-4">
+                <div id="slide-archetype-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-indigo-500/20 text-indigo-300 mx-auto border border-indigo-500/30">Persona</div>
+                <h3 id="slide-archetype-title" class="text-2xl font-extrabold text-emerald-400 mt-2">Calculating...</h3>
+                <p id="slide-archetype-desc" class="text-xs font-medium text-slate-300 leading-relaxed bg-white/5 border border-white/10 rounded-2xl p-5 shadow-inner">Analyzing your moves...</p>
+            </div>
+            <div class="mb-12"></div>
+        </div>
+
+        <div class="slide hidden absolute inset-0 bg-gradient-to-br from-rose-950 via-slate-950 to-zinc-950 flex flex-col justify-between p-8 text-center">
+            <div class="mt-16 space-y-2">
+                <span class="text-xs font-bold tracking-widest text-rose-400 uppercase">Chapter 5</span>
+                <h2 class="text-3xl font-black tracking-tight">What Could Have Been...</h2>
+                <p class="text-slate-400 text-[11px] px-4 leading-normal mt-1">FPL squad depth is comforting, but watching double-digit hauls rotting on your bench is pure emotional damage.</p>
+            </div>
+            <div class="my-auto space-y-6">
+                <div id="slide2-bench" class="text-7xl font-black text-rose-500 font-mono">0</div>
+                <p class="text-slate-300 text-sm px-4">left marooned on your bench this season.</p>
+            </div>
+            <div class="mb-12"></div>
+        </div>
+
+        <div class="slide hidden absolute inset-0 bg-gradient-to-br from-amber-950 via-slate-950 to-stone-950 flex flex-col justify-between p-8 text-center">
+            <div class="mt-16 space-y-2">
+                <span class="text-xs font-bold tracking-widest text-amber-400 uppercase">Chapter 6</span>
+                <h2 class="text-3xl font-black tracking-tight">Triple Captaincy</h2>
+                <p class="text-slate-400 text-[11px] px-4 leading-normal mt-1">The ultimate single-week high-risk chip. Did your elected talisman step up, or leave you in absolute shambles?</p>
+            </div>
+            <div class="my-auto space-y-4 px-4">
+                <div id="slide5-tc-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-white/10 text-white mx-auto">Checking Chip...</div>
+                <div id="slide5-tc" class="text-base font-medium text-slate-200 bg-white/5 border border-white/10 rounded-2xl p-5 shadow-inner leading-relaxed">...</div>
+            </div>
+            <div class="mb-12"></div>
+        </div>
+
+        <div class="slide hidden absolute inset-0 bg-gradient-to-br from-emerald-950 via-slate-950 to-teal-950 flex flex-col justify-between p-8 text-center">
+            <div class="mt-16 space-y-2">
+                <span class="text-xs font-bold tracking-widest text-emerald-400 uppercase">Chapter 7</span>
+                <h2 class="text-3xl font-black tracking-tight">Bench Boost Yield</h2>
+                <p class="text-slate-400 text-[11px] px-4 leading-normal mt-1">Deploying all 15 players simultaneously. Let's see if your backup choices came to play when summoned.</p>
+            </div>
+            <div class="my-auto space-y-4 px-4">
+                <div id="slide6-bb-badge" class="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-white/10 text-white mx-auto">Checking Chip...</div>
+                <div id="slide6-bb" class="text-base font-medium text-slate-200 bg-white/5 border border-white/10 rounded-2xl p-5 shadow-inner leading-relaxed">...</div>
+            </div>
+            <div class="mb-12"></div>
+        </div>
+
+        <div class="slide hidden absolute inset-0 bg-gradient-to-br from-amber-900 via-slate-950 to-orange-950 flex flex-col justify-between p-8 text-center">
+            <div class="mt-16 space-y-2">
+                <span class="text-xs font-bold tracking-widest text-amber-400 uppercase">Chapter 8</span>
+                <h2 class="text-3xl font-black tracking-tight">Armband Allocation</h2>
+                <p class="text-slate-400 text-[11px] px-4 leading-normal mt-1">The heavy crown. Your selected weekly captain can easily steer you to tournament victory or tactical defeat.</p>
+            </div>
+            <div class="my-auto space-y-6">
+                <div id="slide7-loading" class="space-y-3 py-4">
+                    <div class="w-8 h-8 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p class="text-xs text-slate-400 font-mono">Auditing all 38 gameweek selections...</p>
+                </div>
+                <div id="slide7-captain-data" class="hidden space-y-6">
+                    <div class="space-y-1">
+                        <div id="slide7-cap-points" class="text-6xl font-black text-amber-400 font-mono">0 pts</div>
+                        <p class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">Total Armband Points Captured</p>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 text-sm max-w-xs mx-auto">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-400 text-left">Captaincy Curses:</span>
+                            <span id="slide7-cap-curses" class="font-bold font-mono text-rose-400 text-base">0 weeks</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 text-left mt-2 border-t border-white/5 pt-2">Occurs when your selected captain blanks (≤5 pts) while your vice-captain extracts a mega-haul (≥10 pts).</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-12"></div>
+        </div>
+
+        <div class="slide hidden absolute inset-0 bg-gradient-to-b from-teal-950 via-slate-950 to-emerald-950 flex flex-col justify-between p-8 text-center">
+            <div class="mt-14 space-y-2">
+                <span class="text-xs font-bold tracking-widest text-emerald-400 uppercase">Your Legacy</span>
+                <h2 class="text-3xl font-black tracking-tight text-white">Your Season Legacy</h2>
+                <p class="text-slate-400 text-[11px] px-4 leading-normal mt-1">Let's review how your final standing compares to your peak rank throughout this volatile campaign.</p>
+            </div>
+
+            <div class="space-y-3 my-auto">
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-4 text-center max-w-xs mx-auto">
+                    <span id="slide8-finish-category" class="text-lg font-extrabold text-emerald-400 block">Finished Strong 🏆</span>
+                    <p id="slide8-finish-desc" class="text-slate-300 text-xs mt-2 leading-relaxed">Calculating late season performance ratio...</p>
+                </div>
+
+                <div class="bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-xs text-left space-y-2 max-w-xs mx-auto w-full">
+                    <div class="flex justify-between border-b border-white/10 pb-1.5"><span class="text-slate-400">Final Rank:</span><span id="summary-rank" class="font-bold text-green-400">0</span></div>
+                    <div class="flex justify-between border-b border-white/10 pb-1.5"><span class="text-slate-400">Peak Rank:</span><span id="summary-peak" class="font-bold text-purple-400">0</span></div>
+                    <div class="flex justify-between border-b border-white/10 pb-1.5"><span class="text-slate-400">Bench Waste:</span><span id="summary-bench" class="font-bold text-red-400">0 pts</span></div>
+                    <div class="flex justify-between border-b border-white/10 pb-1.5"><span class="text-slate-400">Hits Cost:</span><span id="summary-hits" class="font-bold text-red-500">0 pts</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Transfers:</span><span id="summary-transfers" class="font-bold text-cyan-400">0</span></div>
+                </div>
+            </div>
+
+            <div class="mb-8 px-4">
+                <button onclick="resetApp()" class="w-full bg-white text-slate-950 font-bold py-2.5 px-4 rounded-xl text-sm cursor-pointer transition hover:bg-slate-100">
+                    Check Another ID
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentSlideIndex = 0;
+        let slides = [];
+        let globalManagerId = null;
+        const loaderPhrases = ["Parsing transfer chains...", "Compiling bench drops...", "Structuring chip execution maps..."];
+
+        async function generateWrapped() {
+            const idInput = document.getElementById('managerIdInput').value;
+            if (!idInput) return;
+            globalManagerId = idInput;
+
+            document.getElementById('setup-card').classList.add('hidden');
+            document.getElementById('loading-card').classList.remove('hidden');
+
+            let phaseIdx = 0;
+            const loadingInterval = setInterval(() => {
+                phaseIdx = (phaseIdx + 1) % loaderPhrases.length;
+                document.getElementById('loading-text').textContent = loaderPhrases[phaseIdx];
+            }, 1000);
+
+            try {
+                const response = await fetch(`/api/wrapped/${idInput}`);
+                if (!response.ok) throw new Error("FPL response serialization error.");
+                const data = await response.json();
+
+                document.getElementById('slide1-rank').textContent = data.overall_rank;
+                document.getElementById('slide2-bench').textContent = `${data.bench_pain} pts`;
+                document.getElementById('slide3-transfers').textContent = data.transfers_made;
+                document.getElementById('slide4-hits').textContent = `-${data.hit_cost} pts`;
+
+                document.getElementById('slide-archetype-title').textContent = data.persona || data.archetype;
+                document.getElementById('slide-archetype-desc').textContent = data.persona_description || data.description;
+
+                document.getElementById('slide8-finish-category').textContent = data.finish_category;
+                document.getElementById('slide8-finish-desc').textContent = data.finish_desc;
+
+                const tcText = document.getElementById('slide5-tc');
+                const tcBadge = document.getElementById('slide5-tc-badge');
+                tcText.textContent = data.tc_data.text;
+                if(data.tc_data.played) {
+                    if(data.tc_data.status === 'worked') {
+                        tcBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 mx-auto border border-emerald-500/30";
+                        tcBadge.textContent = "🔥 Pure Masterclass";
+                    } else if(data.tc_data.status === 'roast') {
+                        tcBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-red-500/20 text-red-400 mx-auto border border-red-500/30";
+                        tcBadge.textContent = "🤡 Absolute Roast";
+                    } else {
+                        tcBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-slate-500/20 text-slate-300 mx-auto border border-slate-500/30";
+                        tcBadge.textContent = "😐 Neutral Impact";
+                    }
+                } else {
+                    tcBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-white/10 text-white mx-auto";
+                    tcBadge.textContent = "Unused";
+                }
+
+                const bbText = document.getElementById('slide6-bb');
+                const bbBadge = document.getElementById('slide6-bb-badge');
+                bbText.textContent = data.bb_data.text;
+                if(data.bb_data.played) {
+                    if(data.bb_data.status === 'worked') {
+                        bbBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 mx-auto border border-emerald-500/30";
+                        bbBadge.textContent = "🔥 It Worked";
+                    } else if(data.bb_data.status === 'roast') {
+                        bbBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-red-500/20 text-red-400 mx-auto border border-red-500/30";
+                        bbBadge.textContent = "🤡 Roasted";
+                    } else {
+                        bbBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-slate-500/20 text-slate-300 mx-auto border border-slate-500/30";
+                        bbBadge.textContent = "😐 Neutral Result";
+                    }
+                } else {
+                    bbBadge.className = "inline-block px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-white/10 text-white mx-auto";
+                    bbBadge.textContent = "Unused";
+                }
+
+                const sRanks = document.querySelectorAll('#summary-rank'); sRanks.forEach(el => el.textContent = data.overall_rank);
+                const sPeaks = document.querySelectorAll('#summary-peak'); sPeaks.forEach(el => el.textContent = data.peak_rank);
+                const sBenches = document.querySelectorAll('#summary-bench'); sBenches.forEach(el => el.textContent = `${data.bench_pain} pts`);
+                const sHits = document.querySelectorAll('#summary-hits'); sHits.forEach(el => el.textContent = `-${data.hit_cost} pts`);
+                const sTransfers = document.querySelectorAll('#summary-transfers'); sTransfers.forEach(el => el.textContent = data.transfers_made);
+
+                clearInterval(loadingInterval);
+                document.getElementById('loading-card').classList.add('hidden');
+                document.getElementById('story-wrapper').classList.remove('hidden');
+
+                initSlides();
+
+                if (data.extended_ready) {
+                    displayExtendedMetrics(data);
+                } else {
+                    setTimeout(pollExtendedStats, 2000);
+                }
+
+            } catch (err) {
+                clearInterval(loadingInterval);
+                document.getElementById('loading-card').classList.add('hidden');
+                document.getElementById('setup-card').classList.remove('hidden');
+                document.getElementById('error-msg').textContent = err.message;
+                document.getElementById('error-msg').classList.remove('hidden');
+            }
+        }
+
+        async function pollExtendedStats() {
+            if (!globalManagerId) return;
+            try {
+                const res = await fetch(`/api/wrapped/${globalManagerId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.extended_ready) {
+                        displayExtendedMetrics(data);
+                    } else {
+                        setTimeout(pollExtendedStats, 2500);
+                    }
+                }
+            } catch (e) { console.log("Polling error:", e); }
+        }
+
+        function displayExtendedMetrics(data) {
+            const loadingEl = document.getElementById('slide7-loading');
+            const dataEl = document.getElementById('slide7-captain-data');
+            if (loadingEl && dataEl) {
+                loadingEl.classList.add('hidden');
+                dataEl.classList.remove('hidden');
+                document.getElementById('slide7-cap-points').textContent = `${data.season_captain_points} pts`;
+                document.getElementById('slide7-cap-curses').textContent = `${data.captain_curse_count} weeks`;
+            }
+        }
+
+        function initSlides() {
+            slides = document.querySelectorAll('.slide');
+            const progressContainer = document.getElementById('progress-container');
+            progressContainer.innerHTML = '';
+
+            slides.forEach((_, idx) => {
+                const bar = document.createElement('div');
+                bar.className = 'h-1 flex-1 bg-white/20 rounded-full overflow-hidden';
+                const fill = document.createElement('div');
+                fill.id = `progress-fill-${idx}`;
+                fill.className = 'h-full bg-emerald-400 w-0 transition-all duration-300';
+                bar.appendChild(fill);
+                progressContainer.appendChild(bar);
+            });
+
+            showSlide(0);
+        }
+
+        function showSlide(index) {
+            if (index < 0 || index >= slides.length) return;
+
+            slides.forEach((slide, idx) => {
+                if (idx === index) {
+                    slide.classList.remove('hidden');
+                } else {
+                    slide.classList.add('hidden');
+                }
+
+                const fill = document.getElementById(`progress-fill-${idx}`);
+                if (fill) {
+                    if (idx <= index) {
+                        fill.style.width = '100%';
+                    } else {
+                        fill.style.width = '0%';
+                    }
+                }
+            });
+            currentSlideIndex = index;
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < slides.length - 1) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+
+        function resetApp() {
+            document.getElementById('story-wrapper').classList.add('hidden');
+            document.getElementById('setup-card').classList.remove('hidden');
+            document.getElementById('managerIdInput').value = '';
+            globalManagerId = null;
+        }
+
+        document.getElementById('story-wrapper').addEventListener('click', (event) => {
+            if (event.target.closest('button')) return;
+            const wrapper = event.currentTarget;
+            const rect = wrapper.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            if (clickX < rect.width * 0.4) {
+                prevSlide();
+            } else {
+                nextSlide();
+            }
+        });
+    </script>
+</body>
+</html>
