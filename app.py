@@ -167,11 +167,8 @@ async def hydrate_deep_captaincy_stats(manager_id: int, current_season_gw_data: 
                 base_cap_points = live_scores.get(cap_id, 0)
                 running_captain_points += base_cap_points * multiplier
 
-                if vice:
-                    vice_id = vice.get("element")
-                    base_vice_points = live_scores.get(vice_id, 0)
-                    if base_cap_points <= 5 and base_vice_points >= 10:
-                        curse_incidents += 1
+                if running_captain_points >= 5:
+                   curse_incidents += 1
         except Exception:
             continue
 
