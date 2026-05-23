@@ -8,8 +8,10 @@ def parse_rank_value(value: Any) -> Optional[int]:
         return value
     if isinstance(value, float) and value.is_integer():
         return int(value)
-    if isinstance(value, str) and value.isdigit():
-        return int(value)
+    if isinstance(value, str):
+        cleaned = value.replace(",", "").strip()
+        if cleaned.isdigit():
+            return int(cleaned)
     return None
 
 
@@ -120,16 +122,21 @@ def build_finish_analysis(overall_rank: Any, peak_rank: Any) -> Tuple[str, str]:
             f"Elite finish! You ended at {format_rank(overall)}. Competing at this level is pure champion behavior.",
         )
 
-    ratio = overall / peak
-    if ratio <= 1.2:
+    drop = overall - peak
+    relative_drop = drop / peak
+
+    strong_absolute_threshold = min(max(10000, int(peak * 0.03)), 50000)
+    steady_absolute_threshold = min(max(50000, int(peak * 0.15)), 400000)
+
+    if drop <= strong_absolute_threshold and relative_drop <= 0.05:
         return (
             "Finished Strong 💪",
-            f"Excellent finish! You ended at {format_rank(overall)}, holding onto your lead and finishing extremely close to your peak of {format_rank(peak)}.",
+            f"Excellent finish! You ended at {format_rank(overall)}, holding very close to your season peak of {format_rank(peak)}.",
         )
-    if ratio <= 2.5:
+    if drop <= steady_absolute_threshold and relative_drop <= 0.40:
         return (
             "Stayed Steady ⚖️",
-            f"A reliable campaign. You hovered consistently near your peak of {format_rank(peak)} and secured a respectable finish at {format_rank(overall)}.",
+            f"A reliable campaign. You ended at {format_rank(overall)}, staying reasonably close to your peak of {format_rank(peak)}.",
         )
     return (
         "Late Slide 📉",
@@ -209,6 +216,8 @@ def create_wrapped_payload(
         "extended_ready": False,
         "season_captain_points": 0,
         "captain_curse_count": 0,
+        "stellar_captain_count": 0,
+        "total_players": total_players,
     }
 
 

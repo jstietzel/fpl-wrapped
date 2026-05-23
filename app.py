@@ -133,8 +133,9 @@ async def hydrate_deep_captaincy_stats(manager_id: int, current_season_gw_data: 
     if not current_season_gw_data:
         return
 
-    running_captain_points = 0
+    season_captain_points = 0
     curse_incidents = 0
+    stellar_incidents = 0
 
     for gw_entry in current_season_gw_data:
         gw = gw_entry.get("event")
@@ -163,11 +164,13 @@ async def hydrate_deep_captaincy_stats(manager_id: int, current_season_gw_data: 
             if captain:
                 cap_id = captain.get("element")
                 multiplier = captain.get("multiplier", 1)
-                base_cap_points = live_scores.get(cap_id, 0)
-                running_captain_points += base_cap_points * multiplier
+                captain_points = live_scores.get(cap_id, 0) * multiplier
+                season_captain_points += captain_points
 
-                if running_captain_points <= 7:
-                   curse_incidents += 1
+                if captain_points <= 5:
+                    curse_incidents += 1
+                if captain_points >= 15:
+                    stellar_incidents += 1
         
         except Exception:
             continue
@@ -176,7 +179,8 @@ async def hydrate_deep_captaincy_stats(manager_id: int, current_season_gw_data: 
     if not cached_payload:
         return
 
-    cached_payload["season_captain_points"] = running_captain_points
+    cached_payload["season_captain_points"] = season_captain_points
     cached_payload["captain_curse_count"] = curse_incidents
+    cached_payload["stellar_captain_count"] = stellar_incidents
     cached_payload["extended_ready"] = True
     await app.state.cache.set(manager_id, cached_payload)

@@ -31,3 +31,5 @@ class WrappedResponse(BaseModel):
     extended_ready: bool = False
     season_captain_points: int = 0
     captain_curse_count: int = 0
+    stellar_captain_count: int = 0
+    total_players: int = 10_000_000

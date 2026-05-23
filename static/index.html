@@ -55,6 +55,7 @@
             <div class="space-y-4">
                 <p class="text-slate-400 text-sm">You finished with an overall global rank of:</p>
                 <div id="slide1-rank" class="text-5xl font-black text-green-400 font-mono">0</div>
+                <p id="slide1-total-players" class="text-slate-500 text-xs font-mono">Out of 10,000,000 managers</p>
             </div>
             <div class="mb-12 text-xs text-slate-500 animate-bounce">Tap right to continue ➔</div>
         </div>
@@ -163,6 +164,13 @@
                         </div>
                         <p class="text-[11px] text-slate-500 text-left mt-2 border-t border-white/5 pt-2">Occurs when your selected captain scores 5 points or fewer.</p>
                     </div>
+                    <div id="slide7-stellar" class="hidden bg-white/5 border border-emerald-500/30 rounded-2xl p-4 text-sm max-w-xs mx-auto">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-400 text-left">Stellar Performances:</span>
+                            <span id="slide7-stellar-count" class="font-bold font-mono text-emerald-400 text-base">0 weeks</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 text-left mt-2 border-t border-emerald-500/20 pt-2">Occurs when your selected captain scores 15 points or more.</p>
+                    </div>
                 </div>
             </div>
             <div class="mb-12"></div>
@@ -225,6 +233,7 @@
                 const data = await response.json();
 
                 document.getElementById('slide1-rank').textContent = data.overall_rank;
+                document.getElementById('slide1-total-players').textContent = `Out of ${data.total_players.toLocaleString()} managers`;
                 document.getElementById('slide2-bench').textContent = `${data.bench_pain} pts`;
                 document.getElementById('slide3-transfers').textContent = data.transfers_made;
                 document.getElementById('slide4-hits').textContent = `-${data.hit_cost} pts`;
@@ -323,6 +332,15 @@
                 dataEl.classList.remove('hidden');
                 document.getElementById('slide7-cap-points').textContent = `${data.season_captain_points} pts`;
                 document.getElementById('slide7-cap-curses').textContent = `${data.captain_curse_count} weeks`;
+                
+                const stellarEl = document.getElementById('slide7-stellar');
+                const stellarCountEl = document.getElementById('slide7-stellar-count');
+                if (data.stellar_captain_count > 0) {
+                    stellarEl.classList.remove('hidden');
+                    stellarCountEl.textContent = `${data.stellar_captain_count} weeks`;
+                } else {
+                    stellarEl.classList.add('hidden');
+                }
             }
         }
 
