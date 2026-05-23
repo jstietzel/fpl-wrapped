@@ -236,7 +236,7 @@
                 document.getElementById('slide1-total-players').textContent = `Out of ${data.total_players.toLocaleString()} managers`;
                 document.getElementById('slide2-bench').textContent = `${data.bench_pain} pts`;
                 document.getElementById('slide3-transfers').textContent = data.transfers_made;
-                document.getElementById('slide4-hits').textContent = `-${data.hit_cost} pts`;
+                document.getElementById('slide4-hits').textContent = `${data.hit_cost} pts`;
 
                 document.getElementById('slide-archetype-title').textContent = data.persona || data.archetype;
                 document.getElementById('slide-archetype-desc').textContent = data.persona_description || data.description;
