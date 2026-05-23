@@ -259,7 +259,7 @@ async def build_bb_analysis(
         text = f"Solid return! Your Bench Boost in GW {bb_gw} extracted a tidy {bench_points} points from your sub assets. 📈"
     else:
         status = "worked"
-        text = f"Really Good Masterclass! Your Bench Boost in GW {bb_gw} exploded for an incredible {bench_points} points! Every single sub turned up. 🚀"
+        text = f"Masterclass! Your Bench Boost in GW {bb_gw} exploded for an incredible {bench_points} points! Every single sub turned up. 🚀"
 
     return ChipAnalysis(played=True, gw=bb_gw, status=status, text=text)
 
