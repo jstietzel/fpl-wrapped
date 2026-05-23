@@ -47,26 +47,12 @@ def build_tc_analysis(
         text = f"Ouch! You hit {points} points in GW {tc_gw}, missing the global average of {avg}. Absolute disasterclass! 💀"
     elif rank and rank <= max(1, int(total_players * 0.25)):
         status = "worked"
-        text = f"Masterclass! Your {points} points in GW {tc_gw} put you in the top 25% globally. The triple armband paid off beautifully! 🚀"
+        text = f"Nicely Done! Your {points} points in GW {tc_gw} put you in the top 25% globally. The triple captain paid off beautifully! 🚀"
     else:
         status = "neutral"
         text = f"Decent. You locked in {points} points in GW {tc_gw} compared to the global average of {avg}. Respectable and secure."
 
     return ChipAnalysis(played=True, gw=tc_gw, status=status, text=text)
-
-
-def build_archetype_analysis(total_transfers: int) -> Tuple[str, str]:
-    if total_transfers > 55:
-        description = f"You engineered {total_transfers} transfers. Your strategy was volatile, emotional, and highly erratic."
-        archetype = "The Chaos Merchant 🌀"
-    elif total_transfers < 30:
-        description = f"Only {total_transfers} total transfers. You backed your initial squad layout implicitly, refusing to panic during tough runs."
-        archetype = "The Diamond Hands 💎"
-    else:
-        description = f"With {total_transfers} moves completed, you struck a perfect structural equilibrium between active changes and patient holds."
-        archetype = "The Balanced Tactician ⚖️"
-    return archetype, description
-
 
 def build_persona_quadrant(transfers_made: int, hit_cost: int) -> Tuple[str, str, float, float]:
     """
@@ -97,7 +83,7 @@ def build_persona_quadrant(transfers_made: int, hit_cost: int) -> Tuple[str, str
         desc = f"Low transfer volume ({transfers_made}) yet high hit usage ({hit_cost} pts). You prefer fewer, costly gambles to force short-term advantage."
     else:
         persona = "Chaotic Gambler"
-        desc = f"High transfer activity ({transfers_made}) and frequent/expensive hits ({hit_cost} pts). You chase volatility and big swings."
+        desc = f"High transfer activity ({transfers_made}) and expensive hits ({hit_cost} pts). You chase volatility and big swings."
 
     return persona, desc, transfer_activity, hit_aggression
 
@@ -184,7 +170,6 @@ def create_wrapped_payload(
 ) -> Dict[str, Any]:
     metrics = aggregate_season_metrics(current_season_gw_data)
     tc_data = build_tc_analysis(chips_played, current_season_gw_data, global_event_cache, total_players)
-    archetype, description = build_archetype_analysis(metrics["transfers_made"])
     persona_label, persona_desc, transfer_activity, hit_aggression = build_persona_quadrant(
         metrics["transfers_made"], metrics["hit_cost"]
     )
@@ -205,8 +190,6 @@ def create_wrapped_payload(
             "status": "neutral",
             "text": "Not deployed yet ⏳",
         },
-        "archetype": archetype,
-        "description": description,
         "persona": persona_label,
         "persona_description": persona_desc,
         "transfer_activity": round(transfer_activity, 3),

@@ -19,8 +19,6 @@ class WrappedResponse(BaseModel):
     hit_cost: int
     tc_data: ChipAnalysis
     bb_data: ChipAnalysis
-    archetype: str
-    description: str
     # Tactical persona derived from transfers and hits
     persona: str
     persona_description: str
